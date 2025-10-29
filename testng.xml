@@ -1,5 +1,5 @@
 <suite name="AmazonSuite" parallel="tests" thread-count="2">
-    <parameter name="execution" value="lambdatest"/>
+    <parameter name="execution" value="local"/>
     <test name="iPhoneTest">
         <classes>
             <class name="tests.IPhoneTest"/>

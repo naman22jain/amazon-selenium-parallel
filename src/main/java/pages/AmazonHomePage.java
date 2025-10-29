@@ -20,6 +20,8 @@ public class AmazonHomePage {
 
     public void open() {
         driver.get("https://www.amazon.com/");
+        driver.manage().deleteAllCookies();
+        driver.navigate().refresh();
         waitForSearchBox();
     }
 
