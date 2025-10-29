@@ -1,0 +1,14 @@
+<suite name="AmazonSuite" parallel="tests" thread-count="2">
+    <parameter name="execution" value="lambdatest"/>
+    <test name="iPhoneTest">
+        <classes>
+            <class name="tests.IPhoneTest"/>
+        </classes>
+    </test>
+
+    <test name="GalaxyTest">
+        <classes>
+            <class name="tests.GalaxyTest"/>
+        </classes>
+    </test>
+</suite>
