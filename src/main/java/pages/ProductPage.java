@@ -11,9 +11,8 @@ import java.util.List;
 
 public class ProductPage {
 
-    WebDriver driver;
-    WebDriverWait wait;
-
+    private WebDriver driver;
+    private WebDriverWait wait;
 
     private By addToCartButton = By.xpath("//input[@title='Add to Shopping Cart']");
     private By priceLocator = By.xpath("//span[contains(@id,'subtotal-amount-buybox')]/span");
@@ -29,29 +28,33 @@ public class ProductPage {
     }
 
     public void addToCart() {
-        if (isAddToCartAvailable()) {
-            wait.until(ExpectedConditions.elementToBeClickable(addToCartButton)).click();
-            driver.get("https://www.amazon.com/gp/cart/view.html");
-        } else {
-            System.out.println("Product is currently unavailable (No Add to Cart button found).");
+        try {
+            if (isAddToCartAvailable()) {
+                wait.until(ExpectedConditions.elementToBeClickable(addToCartButton)).click();
+                driver.get("https://www.amazon.com/gp/cart/view.html");
+            } else {
+                System.out.println("Product unavailable — no Add to Cart button found.");
+            }
+        } catch (Exception e) {
+            System.out.println("Error clicking Add to Cart: " + e.getMessage());
         }
     }
+
     public String getProductPrice() {
         try {
             WebElement priceElement = wait.until(ExpectedConditions.visibilityOfElementLocated(priceLocator));
             String price = priceElement.getText().trim();
 
             if (price.isEmpty()) {
-                System.out.println("Found element but text is empty. Retrying...");
+                System.out.println("Empty price text. Retrying...");
                 Thread.sleep(2000);
                 price = driver.findElement(priceLocator).getText().trim();
             }
 
-
             return "Cart Subtotal: " + price;
 
         } catch (Exception e) {
-            System.out.println("Price not found using given locator: " + e.getMessage());
+            System.out.println("Price not found: " + e.getMessage());
             return "N/A";
         }
     }

@@ -9,10 +9,10 @@ import pages.SearchResultsPage;
 public class GalaxyTest extends BaseTest {
 
     @Test
-    public void testGalaxyPrice() throws InterruptedException {
-        AmazonHomePage home = new AmazonHomePage(driver);
-        SearchResultsPage results = new SearchResultsPage(driver);
-        ProductPage product = new ProductPage(driver);
+    public void testGalaxyPrice() {
+        AmazonHomePage home = new AmazonHomePage(getDriver());
+        SearchResultsPage results = new SearchResultsPage(getDriver());
+        ProductPage product = new ProductPage(getDriver());
 
         home.open();
         home.search("Samsung Galaxy S25");

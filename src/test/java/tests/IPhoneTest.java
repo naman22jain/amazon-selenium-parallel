@@ -10,15 +10,13 @@ public class IPhoneTest extends BaseTest {
 
     @Test
     public void testIphonePrice() {
-        AmazonHomePage home = new AmazonHomePage(driver);
-        SearchResultsPage results = new SearchResultsPage(driver);
-        ProductPage product = new ProductPage(driver);
+        AmazonHomePage home = new AmazonHomePage(getDriver());
+        SearchResultsPage results = new SearchResultsPage(getDriver());
+        ProductPage product = new ProductPage(getDriver());
 
         home.open();
         home.search("iPhone 15");
-        results.selectFirstProduct();//span[contains(@id,'subtotal-amount-buybox')]/span
-
-
+        results.selectFirstProduct();
 
         product.addToCart();
 

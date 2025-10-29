@@ -4,51 +4,93 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.MutableCapabilities;
 import org.testng.annotations.*;
 
+import java.lang.reflect.Method;
 import java.net.URL;
-import java.net.MalformedURLException;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BaseTest {
 
-    protected WebDriver driver;
+    // Thread-safe WebDriver instance for parallel execution
+    protected static ThreadLocal<WebDriver> driver = new ThreadLocal<>();
 
-    @Parameters("execution")
+    // Get the driver for the current thread
+    public static WebDriver getDriver() {
+        return driver.get();
+    }
+
+    @Parameters({"execution"})
     @BeforeMethod(alwaysRun = true)
-    public void setup(@Optional("local") String execution) throws MalformedURLException {
-        if (execution.equalsIgnoreCase("lambdatest")) {
+    public void setup(@Optional("local") String execution, Method method) throws Exception {
 
+        WebDriver webDriver;
+
+        if (execution.equalsIgnoreCase("local")) {
+            //Local execution
+            WebDriverManager.chromedriver().setup();
+            webDriver = new ChromeDriver();
+
+        } else if (execution.equalsIgnoreCase("lambdatest")) {
+            //LambdaTest execution
             String username = "namanjainqa";
             String accessKey = "LT_0szUzBf7cIGYjT8RD754VVnmBjEMYHe3IBh3MH5E4KpljtI";
 
-            DesiredCapabilities capabilities = new DesiredCapabilities();
-            capabilities.setCapability("browserName", "Chrome");
-            capabilities.setCapability("browserVersion", "latest");
-            capabilities.setCapability("platformName", "Windows 11");
-            capabilities.setCapability("project", "AmazonAutomation");
-            capabilities.setCapability("build", "AmazonAutomationBuild");
-            capabilities.setCapability("name", "ParallelTestRun");
+            // LambdaTest capabilities
+            Map<String, Object> ltOptions = new HashMap<>();
+            ltOptions.put("build", "AmazonAutomationBuild");
+            ltOptions.put("name", method.getDeclaringClass().getSimpleName() + " - " + method.getName()); // ✅ Dynamic name
+            ltOptions.put("project", "AmazonAutomation");
+            ltOptions.put("selenium_version", "4.25.0");
+            ltOptions.put("w3c", true);
 
-            String gridURL = "https://" + username + ":" + accessKey + "@hub.lambdatest.com/wd/hub";
+            MutableCapabilities caps = new MutableCapabilities();
+            caps.setCapability("browserName", "Chrome");
+            caps.setCapability("browserVersion", "latest");
+            caps.setCapability("platformName", "Windows 11");
+            caps.setCapability("LT:Options", ltOptions);
 
-            driver = new RemoteWebDriver(new URL(gridURL), capabilities);
+            // Initialize remote driver for LambdaTest
+            webDriver = new RemoteWebDriver(
+                    new URL("https://" + username + ":" + accessKey + "@hub.lambdatest.com/wd/hub"),
+                    caps
+            );
 
         } else {
-            //  LOCAL Execution
-            WebDriverManager.chromedriver().setup();
-            driver = new ChromeDriver();
+            throw new IllegalArgumentException("Invalid execution type: " + execution);
         }
 
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-        driver.manage().window().maximize();
-        driver.manage().deleteAllCookies();
+        // Store driver instance for current thread
+        driver.set(webDriver);
+
+        // Standard setup for both environments
+        getDriver().manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+
+        // Defensive cookie cleanup
+        try {
+            getDriver().manage().deleteAllCookies();
+        } catch (Exception e) {
+            System.out.println("Warning: Could not delete cookies - " + e.getMessage());
+        }
+
+        // Maximize window
+        getDriver().manage().window().maximize();
     }
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() {
-        if (driver != null)
-            driver.quit();
+        // Quit driver and clean ThreadLocal storage
+        if (getDriver() != null) {
+            try {
+                getDriver().quit();
+            } catch (Exception e) {
+                System.out.println("Warning: Issue while quitting driver - " + e.getMessage());
+            } finally {
+                driver.remove();
+            }
+        }
     }
 }
