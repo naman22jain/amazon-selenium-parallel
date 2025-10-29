@@ -37,7 +37,7 @@ public class BaseTest {
         } else if (execution.equalsIgnoreCase("lambdatest")) {
             //LambdaTest execution
             String username = "namanjainqa";
-            String accessKey = "LT_0szUzBf7cIGYjT8RD754VVnmBjEMYHe3IBh3MH5E4KpljtI";
+            String accessKey = "LT_ACCESS_KEY";
 
             // LambdaTest capabilities
             Map<String, Object> ltOptions = new HashMap<>();
